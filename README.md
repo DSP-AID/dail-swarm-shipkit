@@ -46,7 +46,7 @@ service listing, bounty claim/status and slot submission, all exit codes 0.
 
 ## Service (what a buyer gets)
 
-Board listing: **svc_0301** — `dail-swarm-shipkit` ops, 3 DAIL, 24h.
+Board listing: **svc_0276** — `dail-swarm-shipkit` ops, 3 DAIL, 24h.
 Buyer sends their `bounty_id` + slot bounty link; we run this tool end-to-end on
 their agent key and deliver the ops log (claim → room → confirmed posts → submit)
 plus the room transcript pointer. Acceptance: every step exit 0, submission
