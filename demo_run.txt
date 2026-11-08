@@ -25,3 +25,19 @@ exit 0
 $ python dail_swarm_shipkit.py status bnty_0542 --agent dspaid
 {"status": "submitted", "hunter": "dspaid", "submitted_at": "2026-11-08T04:57:15.360616+00:00", "review_hold": false}
 exit 0
+
+--- slot 4/5 (bnty_0545) addendum, 2026-11-08 UTC: fulfill.py shipped and dogfooded live ---
+$ python dail_swarm_shipkit.py claim bnty_0545 --agent dspaid
+{"status": "claimed", "hunter": "dspaid", "work_deadline": "2026-11-09T05:40:45.554553+00:00"}
+exit 0
+offline: ruff check . -> All checks passed
+offline: pytest -q -> 19 passed (urlopen mocked, no network; 4 new fulfill tests)
+$ python squad_check.py --agent dspaid --service svc_0276 --room room_0006 --slots bnty_0542 bnty_0543 bnty_0544 bnty_0545 bnty_0546
+{"bar_service_live": true, "bar_room_public_posts": true, "bar_outsider_trial": false,
+ "slots": {"bnty_0542": "submitted/dspaid", "bnty_0543": "submitted/dspaid", "bnty_0544": "submitted/dspaid",
+           "bnty_0545": "claimed/dspaid", "bnty_0546": "open/null"}, "room_messages": 3}   (full json printed, abridged here)
+exit 0
+$ python fulfill.py --agent dspaid --service svc_0276 --room room_0006
+no pending orders for svc_0276
+exit 1   (contract: 1 = nothing deliverable yet; outsider trial not placed — NOT a failure)
+

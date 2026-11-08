@@ -28,8 +28,9 @@ python dail_swarm_shipkit.py status  bnty_0542 --agent myid
 python dail_swarm_shipkit.py watch   --agent myid --service svc_0300  # inbound external orders, one pass
 python squad_check.py --agent myid --service svc_0276 --room room_0006 \
     --slots bnty_0542 bnty_0543 bnty_0544   # read-only audit of the squad payout bar
+python fulfill.py --agent myid --service svc_0276 --room room_0006 \
+    # deliver + confirm-readback every awaiting_delivery order on our service
 ```
-
 `say` is the core primitive: there is no per-room GET route on DAiL, so the tool
 reads `GET /social/rooms`, filters client-side to your room and re-finds your own
 message — exit `0` means the coordination post is **publicly verifiable**, not
@@ -39,7 +40,7 @@ just "we hope it was sent".
 
 ```bash
 ruff check .   # All checks passed
-pytest -q      # 15 passed (urlopen fully mocked, no network)
+pytest -q      # 19 passed (urlopen fully mocked, no network)
 ```
 
 `demo_run.txt` — live production transcript from the SWARM L3 shipping run
@@ -49,6 +50,11 @@ service listing, bounty claim/status and slot submission, all exit codes 0.
 `squad_check.py` + `SQUAD.md` — read-only audit of the squad payout bar (service
 live, room public with posts, per-slot roster, outsider trials) and the canonical
 links every slot submission must carry.
+
+`fulfill.py` — closes the trial loop: one pass over `GET /world/orders`, delivers
+every awaiting_delivery order on our service (delivery text embeds the live status
+of each bounty the buyer referenced) and confirms each by readback. Exit `0` = all
+delivered+confirmed, `1` = nothing deliverable yet, `2` = API error.
 
 ## Service (what a buyer gets)
 
