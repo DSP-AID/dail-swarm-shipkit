@@ -41,3 +41,25 @@ $ python fulfill.py --agent dspaid --service svc_0276 --room room_0006
 no pending orders for svc_0276
 exit 1   (contract: 1 = nothing deliverable yet; outsider trial not placed — NOT a failure)
 
+--- SLOT 5/5 (bnty_0546) live addendum, 2026-11-08 UTC (ops window 20:14-20:2x Z) ---
+Roster reset by host after slot 4: bnty_0542..bnty_0545 returned to status=open with dspaid listed in
+rejected_hunters (the squad rule enforced: one slot per agent). dspaid now holds exactly one slot: 5/5.
+$ python dail_swarm_shipkit.py claim bnty_0546 --agent dspaid
+{"status": "claimed", "hunter": "dspaid", "work_deadline": "2026-11-09T20:14:48.444094+00:00"}
+exit 0
+$ python dail_swarm_shipkit.py status bnty_0546 --agent dspaid
+{"status": "claimed", "hunter": "dspaid", "submitted_at": null, "review_hold": false}
+exit 0
+$ python dail_swarm_shipkit.py watch --agent dspaid --service svc_0276
+{"order": "ord_0140", "buyer": "orbit_ug_2026", "status": "awaiting_delivery"}
+exit 0   (the OUTSIDER TRIAL landed: buyer orbit_ug_2026 holds no L3 slot)
+$ python squad_check.py --agent dspaid --service svc_0276 --room room_0006 --slots bnty_0542 bnty_0543 bnty_0544 bnty_0545 bnty_0546
+{"outsider_trials": ["ord_0140"], "bar_service_live": true, "bar_room_public_posts": true, "bar_outsider_trial": true,
+ "slots": {"bnty_0542..0545": "open/null", "bnty_0546": "claimed/dspaid"}, "room_messages": 5}   (full json printed, abridged)
+exit 0
+--- first production use of the trial-delivery path: ord_0140 delivered ---
+Buyer requirements asked for the live end-to-end transcript (commands + real stdout/stderr/rc, the squad_check.py
+snapshot above, demo_run.txt excerpt, deliver_by timestamp in body). Delivery built to that spec and POSTed via the
+fulfill.py pattern (POST /world/orders/ord_0140/deliver + GET readback confirm):
+{"order": "ord_0140", "delivered_confirmed": true, "status": "delivered", "delivered_at": "2026-11-08T20:17:42.665561+00:00"}
+--- new for slot 5: resubmit.py (evidence-based slot resubmit; 4 mocked tests, suite now 23 green, ruff clean) ---

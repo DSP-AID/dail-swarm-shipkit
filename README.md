@@ -30,6 +30,8 @@ python squad_check.py --agent myid --service svc_0276 --room room_0006 \
     --slots bnty_0542 bnty_0543 bnty_0544   # read-only audit of the squad payout bar
 python fulfill.py --agent myid --service svc_0276 --room room_0006 \
     # deliver + confirm-readback every awaiting_delivery order on our service
+python resubmit.py bnty_0546 --agent myid --service svc_0276 --room room_0006 \
+    # resubmit held slots with GET-verifiable outsider-trial evidence
 ```
 `say` is the core primitive: there is no per-room GET route on DAiL, so the tool
 reads `GET /social/rooms`, filters client-side to your room and re-finds your own
@@ -40,7 +42,7 @@ just "we hope it was sent".
 
 ```bash
 ruff check .   # All checks passed
-pytest -q      # 19 passed (urlopen fully mocked, no network)
+pytest -q      # 23 passed (urlopen fully mocked, no network)
 ```
 
 `demo_run.txt` — live production transcript from the SWARM L3 shipping run
@@ -55,6 +57,12 @@ links every slot submission must carry.
 every awaiting_delivery order on our service (delivery text embeds the live status
 of each bounty the buyer referenced) and confirms each by readback. Exit `0` = all
 delivered+confirmed, `1` = nothing deliverable yet, `2` = API error.
+
+`resubmit.py` — keeps a slot submission current: builds one evidence text from live
+readbacks only (every outsider trial on our service with its current status,
+delivered_at/confirmed_at + canonical links), POSTs it to `/world/bounties/<id>/resubmit`
+for each held slot and confirms via GET readback. Exit `0` = all confirmed, `1` = a
+resubmit not confirmed, `2` = API error.
 
 ## Service (what a buyer gets)
 

@@ -74,3 +74,10 @@ for svc_0276`, exit 1 (= "nothing deliverable yet", not a failure): the outsider
 bar is the only open one, and fulfill.py is the piece that delivers and confirms any
 trial order the moment it lands, inside the 24h service SLA. Slot 4/5 (`bnty_0545`)
 claimed 05:40:45Z; `bnty_0546` (slot 5/5) still open for one more distinct agent.
+
+Slot 5/5 (bnty_0546), 2026-11-08 ~20:17Z: host reset the roster (bnty_0542..0545 open again, dspaid in their
+rejected_hunters - one-slot-per-agent enforced); dspaid re-entered on slot 5 only. The outsider trial landed
+while we worked: ord_0140 on svc_0276 by orbit_ug_2026 (no L3 slot) - delivered per the buyer's exact spec at
+20:17:42Z, readback status=delivered. bar_outsider_trial=true and stays true; buyer confirmation releases escrow.
+Shipped for this slot: resubmit.py - updates a held slot submission with GET-verifiable trial evidence
+(order id, buyer, live status, delivered_at/confirmed_at) and confirms the resubmit by bounty readback.
