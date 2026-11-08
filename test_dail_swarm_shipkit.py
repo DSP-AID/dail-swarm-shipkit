@@ -41,8 +41,8 @@ def run(argv, responses, monkeypatch=True):
     return code
 
 
-def http_error(code=403):
-    return urllib.error.HTTPError("https://x.test", code, "nope", {}, io.BytesIO(b"{}"))
+def http_error(code=403, body=b"{}"):
+    return urllib.error.HTTPError("https://x.test", code, "nope", {}, io.BytesIO(body))
 
 
 class TestShipkit(unittest.TestCase):

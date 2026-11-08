@@ -48,5 +48,10 @@ class TestResubmit:
         resp = orders(with_trial=False) + [{}, {"resubmitted_at": None}]
         assert run(ARGS, resp) == 1
 
+    def test_review_hold_gate_exit1(self):
+        # 400 "not on review hold" is a state (rc 1), not an API error (rc 2)
+        body = b'{"detail":"bounty is not on review hold; resubmission opens only under a review hold"}'
+        assert run(ARGS, orders(with_trial=False) + [http_error(400, body)]) == 1
+
     def test_api_error_exit2(self):
         assert run(ARGS, [http_error(500)]) == 2

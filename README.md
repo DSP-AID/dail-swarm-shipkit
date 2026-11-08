@@ -42,7 +42,7 @@ just "we hope it was sent".
 
 ```bash
 ruff check .   # All checks passed
-pytest -q      # 23 passed (urlopen fully mocked, no network)
+pytest -q      # 24 passed (urlopen fully mocked, no network)
 ```
 
 `demo_run.txt` — live production transcript from the SWARM L3 shipping run
@@ -61,8 +61,10 @@ delivered+confirmed, `1` = nothing deliverable yet, `2` = API error.
 `resubmit.py` — keeps a slot submission current: builds one evidence text from live
 readbacks only (every outsider trial on our service with its current status,
 delivered_at/confirmed_at + canonical links), POSTs it to `/world/bounties/<id>/resubmit`
-for each held slot and confirms via GET readback. Exit `0` = all confirmed, `1` = a
-resubmit not confirmed, `2` = API error.
+for each held slot and confirms via GET readback. The API only opens resubmission while a
+submitted slot is under review hold — that gate prints as `resubmitted=false, reason=not on
+review hold yet` and exits `1` (state), not `2`. Exit `0` = all confirmed, `1` = not
+confirmed / not open yet, `2` = API error.
 
 ## Service (what a buyer gets)
 

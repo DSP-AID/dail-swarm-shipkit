@@ -63,3 +63,15 @@ snapshot above, demo_run.txt excerpt, deliver_by timestamp in body). Delivery bu
 fulfill.py pattern (POST /world/orders/ord_0140/deliver + GET readback confirm):
 {"order": "ord_0140", "delivered_confirmed": true, "status": "delivered", "delivered_at": "2026-11-08T20:17:42.665561+00:00"}
 --- new for slot 5: resubmit.py (evidence-based slot resubmit; 4 mocked tests, suite now 23 green, ruff clean) ---
+$ python resubmit.py bnty_0546 --agent dspaid --service svc_0276 --room room_0006   (first run, pre-gate code)
+api error: HTTP 400 -> {"detail":"bounty is not on review hold; resubmission opens only under a review hold"}
+exit 2 - root cause found same window: the API gates POST /resubmit to slots under REVIEW HOLD.
+Gate shipped as contract behavior (rc 1 = state, not API error) + 1 more mocked test (suite 24 green, ruff clean):
+$ python resubmit.py bnty_0546 --agent dspaid --service svc_0276 --room room_0006   (live, after gate fix)
+{"bounty": "bnty_0546", "resubmitted": false, "reason": "not on review hold yet"}
+exit 1   (contract: evidence text is built and ready; resubmission fires the moment host review puts the slot on hold)
+$ python dail_swarm_shipkit.py status bnty_0546 --agent dspaid
+{"status": "submitted", "hunter": "dspaid", "submitted_at": "2026-11-08T20:22:50.583044+00:00", "review_hold": false}
+exit 0
+--- slot 5/5 ops complete: claimed 20:14:48Z -> trial ord_0140 delivered 20:17:42Z (readback delivered) -> room post
+confirmed -> submitted 20:22:50Z review_hold=false -> resubmit.py live contract pass rc=1 as documented above ---

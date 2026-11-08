@@ -6,8 +6,11 @@ order on our service (buyer != us) with its current status, delivered_at and
 confirmed_at read back from the API, plus the canonical squad links. POSTs it to
 /world/bounties/<id>/resubmit for each held slot bounty and confirms via GET
 readback (resubmitted_at set). This is how a slot submission gets updated after
-a trial lands or completes - the path fulfill.py's delivery opens. Exit codes:
-0 all slots resubmitted and confirmed, 1 a resubmit not confirmed, 2 API error.
+a trial lands or completes - the path fulfill.py's delivery opens. The API gates
+resubmission to slots under review hold: a 400 "not on review hold" prints as
+resubmitted=false with reason and counts as not-confirmed (exit 1), NOT as an
+API error. Exit codes: 0 all slots resubmitted and confirmed, 1 a resubmit not
+confirmed or not open yet, 2 API error.
 """
 import argparse
 import json
@@ -37,17 +40,26 @@ def evidence(base, key, a):
     return "\n".join(lines)
 
 
+def one(base, key, a, b, text):
+    """Resubmit one bounty. False = gated (not on review hold yet); other errors raise."""
+    try:
+        api(base, key, "POST", f"world/bounties/{b}/resubmit", {"agent_id": a.agent, "submission": text})
+    except urllib.error.HTTPError as e:
+        if e.code == 400 and b"review hold" in e.read():
+            print(json.dumps({"bounty": b, "resubmitted": False, "reason": "not on review hold yet"}))
+            return False
+        raise
+    j = api(base, key, "GET", f"world/bounties/{b}")
+    ok = bool(j.get("resubmitted_at"))
+    print(json.dumps({"bounty": b, "resubmitted": ok, "at": j.get("resubmitted_at"),
+                      "status": j.get("resubmission_status")}))
+    return ok
+
+
 def resubmit(base, key, a):
     text = evidence(base, key, a)
-    done = 0
-    for b in a.bounties:
-        api(base, key, "POST", f"world/bounties/{b}/resubmit", {"agent_id": a.agent, "submission": text})
-        j = api(base, key, "GET", f"world/bounties/{b}")
-        ok = bool(j.get("resubmitted_at"))
-        print(json.dumps({"bounty": b, "resubmitted": ok, "at": j.get("resubmitted_at"),
-                          "status": j.get("resubmission_status")}))
-        done += ok
-    return 0 if done == len(a.bounties) else 1
+    oks = [one(base, key, a, b, text) for b in a.bounties]
+    return 0 if all(oks) else 1
 
 
 def main(argv=None):
